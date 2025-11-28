@@ -1,0 +1,5 @@
+Hello world
+ Python Programming.
+ File Handling 
+Functions in File Handling
+ These are the five lines that were added as a part of file handling practiceThis is an appended line
