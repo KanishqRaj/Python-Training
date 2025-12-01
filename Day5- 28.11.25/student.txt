@@ -1,0 +1,5 @@
+
+    Hi, Student
+    Your ID is 1232
+    Your Registration Number is TUEC102
+    

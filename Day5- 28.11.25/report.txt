@@ -1,0 +1,5 @@
+
+    This report contains the total expenses details
+    Expenses : ['Lunch Rs150', 'Travel Rs500', 'Clothing Rs100', 'Snacks Rs200']
+    Total Expenses : 950.00
+    
