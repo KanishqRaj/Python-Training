@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>To‑Do List</title>
+
+  <!-- Link to the app's stylesheet using url_for -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+  <!-- Add Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <!-- ===== Navbar ===== -->
+  <header class="app-header" role="banner">
+    <nav class="nav">
+      <a href="{{ url_for('home') }}" class="logo">📝 To-Do</a>
+
+      <div class="nav-actions">
+        <!-- Filter (GET) -->
+        <form method="get" action="{{ url_for('home') }}">
+          <label for="statusFilter" class="sr-only">Filter by status</label>
+          <select id="statusFilter" name="status" aria-label="Filter by status" onchange="this.form.submit()">
+            <option value="all"> All </option>
+            <option value="Pending"  >Pending</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </form>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ===== Main ===== -->
+  <main class="container">
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        <section class="card" style="margin-top: 8px;">
+          <div class="card-body">
+            {% for category, message in messages %}
+              <div class="flash flash-{{ category|lower }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Add Task Card -->
+    <section class="card" aria-labelledby="addTaskTitle">
+      <div class="card-header">
+        <h2 id="addTaskTitle">Add a new task</h2>
+      </div>
+
+      <div class="card-body">
+        <form id="addTaskForm" class="form grid-2" method="post" action="{{ url_for('create_task') }}">
+          <div class="form-control">
+            <label for="title">Title <span class="req">*</span></label>
+            <input type="text" id="title" name="title" placeholder="Buy groceries" required />
+            <p class="help">Keep it short and clear.</p>
+          </div>
+
+          <div class="form-control">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="3" placeholder="Optional notes"></textarea>
+          </div>
+
+          <div class="form-footer">
+            <button type="submit" class="btn primary" aria-label="Add task">Add Task</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Tasks List -->
+    <section class="card" aria-labelledby="tasksTitle">
+      <div class="card-header card-header-row">
+        <h2 id="tasksTitle">All tasks</h2>
+
+        <div class="badges">
+          <span class="badge">All: {{ counts.all if counts else 0 }}</span>
+          <span class="badge">Pending: {{ counts.pending if counts else 0 }}</span>
+          <span class="badge">Completed: {{ counts.completed if counts else 0 }}</span>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table" aria-describedby="tasksTitle">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th class="actions-col">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody id="tasksTbody">
+            {% if tasks %}
+              {% for t in tasks %}
+                <tr data-task-id="{{ t.id }}">
+                  <td>
+                    <span class="task-title {{ 'completed' if t.status == 'Completed' else '' }}">
+                      {{ t.title }}
+                    </span>
+                  </td>
+
+                  <td class="task-desc">{{ t.description or '' }}</td>
+
+                  <td>
+                    <span class="status pill {{ 'completed' if t.status == 'Completed' else 'pending' }}">
+                      {{ t.status }}
+                    </span>
+                  </td>
+
+                  <td>
+                    {% if t.created_at %}
+                      <time datetime="{{ t.created_at.isoformat() }}">
+                        {{ t.created_at.strftime('%b %d, %Y') }}
+                      </time>
+                    {% else %}
+                      —
+                    {% endif %}
+                  </td>
+
+                  <td class="row-actions">
+                    {% if t.status == 'Pending' %}
+                      <form method="post" action="{{ url_for('complete_task', task_id=t.id) }}">
+                        <button type="submit" class="btn icon success" title="Mark as completed" aria-label="Mark as completed">✔</button>
+                      </form>
+                    {% else %}
+                      <form method="post" action="{{ url_for('reopen_task', task_id=t.id) }}">
+                        <button type="submit" class="btn icon warning" title="Reopen task" aria-label="Reopen task">↺</button>
+                      </form>
+                    {% endif %}
+
+                    <a href="{{ url_for('edit_task', task_id=t.id) }}" class="btn icon" title="Edit task" aria-label="Edit task">✏️</a>
+
+                    <form method="post" action="{{ url_for('delete_task', task_id=t.id) }}" style="display:inline;">
+                      <button type="submit" class="btn icon danger" title="Delete task" aria-label="Delete task">🗑</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr><td colspan="5" style="text-align:center;color:var(--muted);">No tasks yet. Add your first task above.</td></tr>
+            {% endif %}
+            </tbody>
+
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer" role="contentinfo">
+      <p>© {{ now.year if now else "" }} To-Do App • Built with Flask & SQLite</p>
+    </footer>
+
+  </main>
+</body>
+</html>
